@@ -112,13 +112,21 @@ FROM (SELECT h1.name, h1.grade
 ORDER BY r1.grade, r1.name;
 
 /*Q7 For each student A who likes a student B where the two are not friends, find if they have a friend C in common (who can introduce them!). For all such trios, return the name and grade of A, B, and C. */
-/* TODO: */
+SELECT h1.name, h1.grade, h2.name, h2.grade, h3.name, h3.grade
+FROM Highschooler h1, Highschooler h2, Highschooler h3, (SELECT r1.ID1 as ID1, r1.ID2 as ID2, f.ID1 as ID3
+	FROM Friend f, (SELECT l1.ID1, l1.ID2 
+		FROM Likes l1
+		WHERE l1.ID1 NOT IN (SELECT ID2 FROM Friend WHERE ID1 = l1.ID2)) r1
+	WHERE r1.ID1 = f.ID2 AND f.ID1 IN (SELECT ID2 FROM Friend WHERE ID1 = r1.ID2)) r2
+WHERE h1.ID = r2.ID1 AND h2.ID = r2.ID2 and h3.ID = r2.ID3;
 
+/*Q8 Find the difference between the number of students in the school and the number of different first names. */
+SELECT (SELECT COUNT(*) FROM Highschooler) - (SELECT COUNT(DISTINCT name) FROM Highschooler);
 
-/*TODO: Q8 Find the difference between the number of students in the school and the number of different first names. */
-
-/*TODO: Q9 Find the name and grade of all students who are liked by more than one other student.*/
-
-
-
-		
+/*Q9 Find the name and grade of all students who are liked by more than one other student.*/
+SELECT h.name, h.grade
+FROM Highschooler h, (SELECT ID2
+	FROM Likes
+	GROUP BY ID2 
+	HAVING COUNT(ID2) > 1) r
+WHERE h.ID = r.ID2
